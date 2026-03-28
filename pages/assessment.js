@@ -112,23 +112,32 @@ export default function Assessment() {
       setTyping(false);
       
       if (res.ok) {
-        // Attempt to parse JSON response for completion
+        setTyping(false);
+        const reply = data.reply;
+        
+        // ROBUST JSON EXTRACTION (Senior UI/UX Logic)
         try {
-          let rawText = data.reply.trim();
-          if (rawText.startsWith('```json')) rawText = rawText.slice(7, -3).trim();
-          else if (rawText.startsWith('```')) rawText = rawText.slice(3, -3).trim();
-          
-          const parsed = JSON.parse(rawText);
-          if (parsed && parsed.type === 'result') {
-            setResultProfile(parsed);
-          } else {
-             setMessages(m => [...m, { role: 'aria', text: data.reply }]);
-             if (voiceMode) voice.speak(data.reply);
+          const jsonMatch = reply.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            if (parsed && parsed.type === 'result') {
+              // Extract conversational text if present
+              const conversationPart = reply.replace(jsonMatch[0], '').trim();
+              if (conversationPart && conversationPart.length > 10) {
+                 setMessages(m => [...m, { role: 'aria', text: conversationPart }]);
+                 if (voiceMode) voice.speak(conversationPart);
+              }
+              setResultProfile(parsed);
+              return;
+            }
           }
+          
+          setMessages(m => [...m, { role: 'aria', text: reply }]);
+          if (voiceMode) voice.speak(reply);
         } catch(e) {
-          // Not JSON, normal text
-          setMessages(m => [...m, { role: 'aria', text: data.reply }]);
-          if (voiceMode) voice.speak(data.reply);
+          console.error("Parse Error:", e);
+          setMessages(m => [...m, { role: 'aria', text: reply }]);
+          if (voiceMode) voice.speak(reply);
         }
       } else {
         setMessages(m => [...m, { role: 'aria', text: 'Error connecting to ARIA 😔 ' + data.error }]);
@@ -275,37 +284,55 @@ export default function Assessment() {
 
         {/* RESULTS SCREEN */}
         {resultProfile && (
-          <div style={{ width: '100%', maxWidth: 580, position: 'relative', zIndex: 1, textAlign: 'center' }}>
-            <div style={{ fontSize: '0.82rem', color: 'var(--text-dim)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>Assessment Complete</div>
+          <div style={{ width: '100%', maxWidth: 640, position: 'relative', zIndex: 1, textAlign: 'center' }}>
+            <div style={{ fontSize: '0.9rem', color: 'var(--cyan)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 20, fontWeight: 700, animation: 'fadeIn 0.5s ease' }}>
+              Assessment Complete // Roadmap Calibrated
+            </div>
 
-            <div className="glass card-glow" style={{ padding: 40, marginBottom: 28, animation: 'levelUp 0.5s ease' }}>
-              <div style={{ fontSize: '3rem', marginBottom: 16 }}>🧠</div>
-              <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.8rem', color: 'var(--cyan)', marginBottom: 12 }}>
-                {resultProfile.profileLabel}
-              </h2>
-              <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 24 }}>{resultProfile.desc}</p>
-
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 20 }}>
-                {[
-                  { label: 'Tier', val: resultProfile.tier, color: 'var(--cyan)' },
-                  { label: 'Topic', val: topic, color: 'var(--violet)' },
-                  { label: 'Levels', val: '30 nodes', color: 'var(--text-muted)' },
-                ].map((s, i) => (
-                  <div key={i} style={{ padding: '8px 16px', background: 'var(--surface-bright)', borderRadius: 8, textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>{s.label}</div>
-                    <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, color: s.color }}>{s.val}</div>
-                  </div>
-                ))}
+            <div className="glass card-glow" style={{ padding: '0', overflow: 'hidden', marginBottom: 32, animation: 'levelUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)', border: '1px solid rgba(0,245,255,0.3)' }}>
+              {/* Header Visual */}
+              <div style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.2) 0%, rgba(0,245,255,0.1) 100%)', padding: '40px 20px', borderBottom: '1px solid rgba(0,245,255,0.15)', position: 'relative' }}>
+                <div style={{ fontSize: '4.5rem', marginBottom: 20, filter: 'drop-shadow(0 0 20px rgba(0,245,255,0.4))' }}>🧠</div>
+                <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '2.2rem', color: '#fff', marginBottom: 8, textShadow: '0 0 30px rgba(0,245,255,0.5)' }}>
+                  Level: {resultProfile.tier}
+                </h2>
+                <div style={{ fontSize: '1rem', color: 'var(--cyan)', opacity: 0.9, letterSpacing: '0.05em' }}>{resultProfile.profileLabel} // {topic}</div>
+                <div style={{ width: 100, height: 2, background: 'var(--cyan)', margin: '16px auto', borderRadius: 99 }} />
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00ff88', display: 'inline-block' }} />
-                Spawning you at {resultProfile.tier === 'Advanced' ? 'Level 10' : resultProfile.tier === 'Intermediate' ? 'Level 5' : 'Level 1'} 
+              {/* Cognitive Breakdown */}
+              <div style={{ padding: '30px 40px', textAlign: 'left' }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12, opacity: 0.8 }}>Knowledge Verification</div>
+                <p style={{ color: 'var(--text)', lineHeight: 1.8, marginBottom: 28, fontSize: '1.05rem', fontWeight: 400 }}>
+                  {resultProfile.desc}
+                </p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16, marginBottom: 30 }}>
+                  {[
+                    { label: 'Calculated Tier', val: resultProfile.tier, icon: '⚡' },
+                    { label: 'Subject Aura', val: topic, icon: '🌫️' },
+                    { label: 'Total Nodes', val: '30 Roadmap Units', icon: '📍' },
+                  ].map((s, i) => (
+                    <div key={i} style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(10px)' }}>
+                      <div style={{ fontSize: '1.2rem', marginBottom: 8 }}>{s.icon}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{s.label}</div>
+                      <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, color: '#fff', fontSize: '1rem' }}>{s.val}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ background: 'rgba(0,245,255,0.05)', padding: '20px', borderRadius: 16, border: '1px solid rgba(0,245,255,0.15)', display: 'flex', gap: 16, alignItems: 'center' }}>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(0,245,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>📍</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                    <strong style={{ color: 'var(--cyan)' }}>Initialization Point:</strong> spwaning your local neural roadmap at <strong>Node #{resultProfile.tier === 'Advanced' ? '10' : resultProfile.tier === 'Intermediate' ? '5' : '1'}</strong> based on your proficiency.
+                  </div>
+                </div>
               </div>
             </div>
 
-            <button className="btn btn-primary btn-lg pulse-ring" onClick={handleViewRoadmap} style={{ padding: '16px 48px', fontSize: '1.1rem' }}>
-              🗺️ View My Roadmap →
+            <button className="btn btn-primary pulse-ringPulse" onClick={handleViewRoadmap} 
+              style={{ padding: '20px 60px', fontSize: '1.2rem', borderRadius: 16, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', boxShadow: 'var(--glow-cyan)' }}>
+              Open My Personalized Roadmap →
             </button>
           </div>
         )}

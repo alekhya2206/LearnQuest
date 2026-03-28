@@ -127,21 +127,34 @@ export default function Onboarding() {
       setTyping(false);
       
       if (res.ok) {
+        setTyping(false);
+        const reply = data.reply;
+        
+        // ROBUST JSON EXTRACTION (Senior UI/UX Logic)
         try {
-          let rawText = data.reply.trim();
-          if (rawText.startsWith('```json')) rawText = rawText.slice(7, -3).trim();
-          else if (rawText.startsWith('```')) rawText = rawText.slice(3, -3).trim();
-          
-          const parsed = JSON.parse(rawText);
-          if (parsed && parsed.type === 'result') {
-            await saveProfile(parsed);
-          } else {
-             setMessages(m => [...m, { role: 'aria', text: data.reply }]);
-             if (voiceMode) voice.speak(data.reply);
+          const jsonMatch = reply.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            if (parsed && parsed.type === 'result') {
+              // Extract non-JSON text if AI included conversational parts
+              const conversationPart = reply.replace(jsonMatch[0], '').trim();
+              if (conversationPart && conversationPart.length > 10) {
+                 setMessages(m => [...m, { role: 'aria', text: conversationPart }]);
+                 if (voiceMode) voice.speak(conversationPart);
+              }
+              
+              await saveProfile(parsed);
+              return; // Exit early as result is handled
+            }
           }
+          
+          // Regular conversation path
+          setMessages(m => [...m, { role: 'aria', text: reply }]);
+          if (voiceMode) voice.speak(reply);
         } catch(e) {
-          setMessages(m => [...m, { role: 'aria', text: data.reply }]);
-          if (voiceMode) voice.speak(data.reply);
+          console.error("Parse Error:", e);
+          setMessages(m => [...m, { role: 'aria', text: reply }]);
+          if (voiceMode) voice.speak(reply);
         }
       } else {
         setMessages(m => [...m, { role: 'aria', text: 'Error connecting to ARIA 😔 ' + data.error }]);
@@ -274,31 +287,61 @@ export default function Onboarding() {
 
         {/* RESULTS SCREEN */}
         {psychProfile && (
-          <div style={{ width: '100%', maxWidth: 580, position: 'relative', zIndex: 1, textAlign: 'center' }}>
-            <div style={{ fontSize: '0.82rem', color: 'var(--text-dim)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>Profile Calibrated</div>
+          <div style={{ width: '100%', maxWidth: 640, position: 'relative', zIndex: 1, textAlign: 'center' }}>
+            <div style={{ fontSize: '0.9rem', color: 'var(--cyan)', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 20, fontWeight: 700, animation: 'fadeIn 0.5s ease' }}>
+              Neural Sync Complete // Profile Calibrated
+            </div>
 
-            <div className="glass card-glow" style={{ padding: 40, marginBottom: 28, animation: 'levelUp 0.5s ease', borderColor: 'var(--cyan)' }}>
-              <div style={{ fontSize: '3.5rem', marginBottom: 16 }}>🧬</div>
-              <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.8rem', color: 'var(--cyan)', marginBottom: 8 }}>
-                {psychProfile.psychProfile}
-              </h2>
-              <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 24, fontSize: '1.05rem' }}>{psychProfile.desc}</p>
-
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 20 }}>
-                {psychProfile.traits?.map((trait, i) => (
-                   <span key={i} style={{ background: 'rgba(123,47,255,0.2)', color: '#d0b0ff', padding: '6px 14px', borderRadius: 999, fontSize: '0.85rem', fontWeight: 600, border: '1px solid rgba(123,47,255,0.3)' }}>
-                     {trait}
-                   </span>
-                ))}
+            <div className="glass card-glow" style={{ padding: '0', overflow: 'hidden', marginBottom: 32, animation: 'levelUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)', border: '1px solid rgba(0,245,255,0.3)' }}>
+              {/* Header Visual */}
+              <div style={{ background: 'linear-gradient(135deg, rgba(123,47,255,0.2) 0%, rgba(0,245,255,0.1) 100%)', padding: '40px 20px', borderBottom: '1px solid rgba(0,245,255,0.15)', position: 'relative' }}>
+                <div style={{ fontSize: '4.5rem', marginBottom: 20, filter: 'drop-shadow(0 0 20px rgba(0,245,255,0.4))' }}>🧬</div>
+                <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '2.2rem', color: '#fff', marginBottom: 8, textShadow: '0 0 30px rgba(0,245,255,0.5)' }}>
+                  {psychProfile.psychProfile}
+                </h2>
+                <div style={{ width: 100, height: 2, background: 'var(--cyan)', margin: '12px auto', borderRadius: 99 }} />
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', fontSize: '0.85rem', color: 'var(--cyan)', background: 'rgba(0,245,255,0.1)', padding: '10px 16px', borderRadius: 12, border: '1px dashed rgba(0,245,255,0.3)' }}>
-                <span>ARIA is now tuned exactly to your brainwaves. Every course will adapt to this style before you even start.</span>
+              {/* Cognitive Breakdown */}
+              <div style={{ padding: '30px 40px', textAlign: 'left' }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--cyan)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12, opacity: 0.8 }}>Cognitive Summary</div>
+                <p style={{ color: 'var(--text)', lineHeight: 1.8, marginBottom: 28, fontSize: '1.05rem', fontWeight: 400 }}>
+                  {psychProfile.desc}
+                </p>
+
+                <div style={{ fontSize: '0.8rem', color: 'var(--violet)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12, opacity: 0.8 }}>Neuro-Traits</div>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 30 }}>
+                  {(psychProfile.traits || ["Analytical", "Intuitive", "Reflexive"]).map((trait, i) => (
+                    <div key={i} style={{ 
+                      background: 'rgba(0,245,255,0.08)', 
+                      color: 'var(--cyan)', 
+                      padding: '8px 16px', 
+                      borderRadius: 12, 
+                      fontSize: '0.88rem', 
+                      fontWeight: 600, 
+                      border: '1px solid rgba(0,245,255,0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8
+                    }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--cyan)', boxShadow: '0 0 8px var(--cyan)' }} />
+                      {trait}
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ background: 'rgba(123,47,255,0.05)', padding: '20px', borderRadius: 16, border: '1px solid rgba(123,47,255,0.15)', display: 'flex', gap: 16, alignItems: 'center' }}>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(123,47,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>📡</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                    <strong style={{ color: 'var(--violet)' }}>ARIA Optimization:</strong> Every roadmap node from this point forward will pivot to your unique learning DNA.
+                  </div>
+                </div>
               </div>
             </div>
 
-            <button className="btn btn-primary pulse-ring" onClick={handleEnterDashboard} style={{ padding: '16px 48px', fontSize: '1.1rem', borderRadius: 999, fontWeight: 800 }}>
-              Enter the Dashboard →
+            <button className="btn btn-primary pulse-ring" onClick={handleEnterDashboard} 
+              style={{ padding: '20px 60px', fontSize: '1.2rem', borderRadius: 16, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', boxShadow: 'var(--glow-cyan)' }}>
+              Access Dashboard // Initialize Protocol
             </button>
           </div>
         )}
