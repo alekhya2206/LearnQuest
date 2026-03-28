@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import Nav from '../components/Nav';
+import useVoice from '../hooks/useVoice';
 
 const Particles = dynamic(() => import('../components/Particles'), { ssr: false });
 
@@ -16,8 +17,25 @@ export default function Assessment() {
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
   const [resultProfile, setResultProfile] = useState(null);
+  const [voiceMode, setVoiceMode] = useState(false);
   
   const bottomRef = useRef(null);
+  const voice = useVoice();
+
+  // Pipe voice transcript into the input field
+  useEffect(() => {
+    if (voice.transcript) setInput(voice.transcript);
+  }, [voice.transcript]);
+
+  // Auto-send when user stops speaking in voice mode
+  useEffect(() => {
+    if (voiceMode && !voice.isListening && voice.transcript.trim()) {
+      const timer = setTimeout(() => {
+        send();
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [voice.isListening, voiceMode]);
 
   useEffect(() => {
     const u = localStorage.getItem('lq_user');
@@ -49,6 +67,7 @@ export default function Assessment() {
         setTyping(false);
         if (res.ok) {
            setMessages([{ role: 'aria', text: data.reply }]);
+           if (voiceMode) voice.speak(data.reply);
         } else {
            setMessages([{ role: 'aria', text: 'Error connecting to ARIA 😔 ' + data.error }]);
         }
@@ -104,10 +123,12 @@ export default function Assessment() {
             setResultProfile(parsed);
           } else {
              setMessages(m => [...m, { role: 'aria', text: data.reply }]);
+             if (voiceMode) voice.speak(data.reply);
           }
         } catch(e) {
           // Not JSON, normal text
           setMessages(m => [...m, { role: 'aria', text: data.reply }]);
+          if (voiceMode) voice.speak(data.reply);
         }
       } else {
         setMessages(m => [...m, { role: 'aria', text: 'Error connecting to ARIA 😔 ' + data.error }]);
@@ -160,6 +181,23 @@ export default function Assessment() {
                border: '1px solid rgba(0,245,255,0.2)', borderRadius: 16, height: 500,
                boxShadow: '0 20px 60px rgba(0,0,0,0.5), var(--glow-cyan-sm)' }}>
             
+            {/* Voice Mode Toggle */}
+            <div style={{ padding: '10px 24px 0', display: 'flex', justifyContent: 'flex-end' }}>
+              {voice.supported && (
+                <button onClick={() => { setVoiceMode(!voiceMode); if (voice.isSpeaking) voice.stopSpeaking(); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px',
+                    borderRadius: 999, fontSize: '0.78rem', fontWeight: 600,
+                    background: voiceMode ? 'rgba(0,245,255,0.15)' : 'transparent',
+                    border: `1px solid ${voiceMode ? 'var(--cyan)' : 'rgba(255,255,255,0.1)'}`,
+                    color: voiceMode ? 'var(--cyan)' : 'var(--text-dim)',
+                    cursor: 'pointer', transition: 'all 0.2s'
+                  }}>
+                  {voiceMode ? '🎙️ Voice On' : '🔇 Voice Off'}
+                </button>
+              )}
+            </div>
+            
             {/* Messages Container */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {messages.map((m, i) => (
@@ -172,6 +210,12 @@ export default function Assessment() {
                   fontSize: '0.95rem', lineHeight: 1.6, color: 'var(--text)', whiteSpace: 'pre-wrap'
                 }}>
                   {m.text}
+                  {m.role === 'aria' && voice.supported && (
+                    <button onClick={() => voice.isSpeaking ? voice.stopSpeaking() : voice.speak(m.text)}
+                      style={{ marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', color: voice.isSpeaking ? 'var(--cyan)' : 'var(--text-dim)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, transition: 'color 0.2s' }}>
+                      {voice.isSpeaking ? '🔊 Speaking...' : '🔈 Listen'}
+                    </button>
+                  )}
                 </div>
               ))}
               {typing && (
@@ -185,25 +229,45 @@ export default function Assessment() {
             </div>
 
             {/* Input Container */}
-            <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(0,245,255,0.1)', display: 'flex', gap: 12 }}>
+            <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(0,245,255,0.1)', display: 'flex', gap: 12, alignItems: 'center' }}>
+              {/* Mic Button */}
+              {voice.supported && (
+                <button
+                  onClick={() => voice.isListening ? voice.stopListening() : voice.startListening()}
+                  disabled={typing}
+                  style={{
+                    width: 50, height: 50, borderRadius: '50%', flexShrink: 0,
+                    background: voice.isListening ? 'rgba(255,50,50,0.25)' : 'var(--surface-bright)',
+                    border: `2px solid ${voice.isListening ? '#ff4444' : 'rgba(0,245,255,0.2)'}`,
+                    cursor: typing ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '1.3rem', transition: 'all 0.3s ease',
+                    boxShadow: voice.isListening ? '0 0 20px rgba(255,50,50,0.4)' : 'none',
+                    animation: voice.isListening ? 'pulse-ring-red 1.5s ease-in-out infinite' : 'none',
+                    opacity: typing ? 0.4 : 1
+                  }}>
+                  {voice.isListening ? '⏹️' : '🎤'}
+                </button>
+              )}
               <input
                 value={input} onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && send()}
-                placeholder="Type your answer to ARIA..."
+                placeholder={voice.isListening ? '🔴 Listening...' : 'Type your answer to ARIA...'}
                 style={{
-                  flex: 1, background: 'var(--surface)', border: '1px solid rgba(0,245,255,0.2)',
-                  borderRadius: 999, padding: '14px 20px', color: 'var(--text)', fontSize: '1rem', outline: 'none'
+                  flex: 1, background: 'var(--surface)',
+                  border: `1px solid ${voice.isListening ? 'rgba(255,50,50,0.4)' : 'rgba(0,245,255,0.2)'}`,
+                  borderRadius: 999, padding: '14px 20px', color: 'var(--text)', fontSize: '1rem', outline: 'none',
+                  transition: 'border-color 0.3s'
                 }}
-                disabled={typing}
-                onFocus={e => e.target.style.borderColor = 'var(--cyan)'}
-                onBlur={e => e.target.style.borderColor = 'rgba(0,245,255,0.2)'}
+                disabled={typing || voice.isListening}
+                onFocus={e => { if (!voice.isListening) e.target.style.borderColor = 'var(--cyan)'; }}
+                onBlur={e => { if (!voice.isListening) e.target.style.borderColor = 'rgba(0,245,255,0.2)'; }}
               />
-              <button onClick={send} disabled={typing}
+              <button onClick={send} disabled={typing || voice.isListening}
                 style={{
                   width: 50, height: 50, borderRadius: '50%', background: 'var(--cyan)',
                   border: 'none', cursor: typing ? 'default' : 'pointer', display: 'flex', alignItems: 'center',
                   justifyContent: 'center', fontSize: '1.2rem', color: '#060b18',
-                  boxShadow: 'var(--glow-cyan-sm)', flexShrink: 0, opacity: typing ? 0.6 : 1
+                  boxShadow: 'var(--glow-cyan-sm)', flexShrink: 0, opacity: (typing || voice.isListening) ? 0.6 : 1
                 }}>→</button>
             </div>
           </div>
@@ -251,6 +315,7 @@ export default function Assessment() {
         @keyframes spin-ring { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         @keyframes levelUp { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes pulse-ring-red { 0%,100% { box-shadow: 0 0 0 0 rgba(255,68,68,0.5); } 50% { box-shadow: 0 0 0 10px rgba(255,68,68,0); } }
       `}</style>
     </>
   );
