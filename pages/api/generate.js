@@ -4,7 +4,9 @@ export default async function handler(req, res) {
   
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: "Missing GROQ_API_KEY in environment" });
+    return res.status(500).json({ 
+      error: "Missing GROQ_API_KEY in environment. If you are seeing this on a deployed site, please add it as a secret environment variable in your dashboard (e.g. Vercel) and redeploy." 
+    });
   }
 
   try {
