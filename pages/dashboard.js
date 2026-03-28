@@ -20,16 +20,20 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState('');
   const [showLevelUp, setShowLevelUp] = useState(false);
+  const [showPsychPanel, setShowPsychPanel] = useState(false);
 
   useEffect(() => {
     const init = async () => {
       // Check Supabase session first
       const { data: { session } } = await supabase.auth.getSession();
+      
+      let lqUser = null;
+
       if (!session) {
         // Fallback: check localStorage (for users who logged in before Supabase)
         const stored = localStorage.getItem('lq_user');
         if (!stored) { router.push('/auth'); return; }
-        setUser(JSON.parse(stored));
+        lqUser = JSON.parse(stored);
       } else {
         // Sync fresh profile from Supabase
         const { data: profile } = await supabase
@@ -38,7 +42,7 @@ export default function Dashboard() {
           .eq('id', session.user.id)
           .single();
 
-        const lqUser = {
+        lqUser = {
           id: session.user.id,
           name: profile?.name || session.user.email.split('@')[0],
           email: session.user.email,
@@ -46,17 +50,27 @@ export default function Dashboard() {
           xp: profile?.xp ?? 0,
           streak: profile?.streak ?? 0,
           badges: profile?.badges ?? [],
+          onboarded: profile?.onboarded ?? false,
+          psychProfile: profile?.psych_profile ? JSON.parse(profile.psych_profile) : null,
         };
         localStorage.setItem('lq_user', JSON.stringify(lqUser));
-        setUser(lqUser);
       }
+      
+      setUser(lqUser);
+
+      // Force onboarding if they haven't done it
+      if (!lqUser.onboarded) {
+        router.push('/onboarding');
+        return;
+      }
+
       if (router.query.levelup) {
         setTimeout(() => setShowLevelUp(true), 500);
         setTimeout(() => setShowLevelUp(false), 4000);
       }
     };
     init();
-  }, []);
+  }, [router]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -143,8 +157,8 @@ export default function Dashboard() {
 
         {/* Streak Widget + Recent Roadmaps */}
         <div className="container" style={{ paddingBottom: 60, position: 'relative', zIndex: 1 }}>
-          {/* Streak */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 32 }}>
+          {/* Stats Bar */}
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 20, marginBottom: 32 }}>
             <div className="glass" style={{ padding: '14px 24px', display: 'inline-flex', alignItems: 'center', gap: 16, borderColor: 'rgba(255,107,53,0.3)' }}>
               <span style={{ fontSize: '1.4rem' }}>🔥</span>
               <div>
@@ -156,12 +170,97 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+
+            {user.psychProfile && (
+              <div style={{ position: 'relative' }}>
+                <div className="glass card-glow" onClick={() => setShowPsychPanel(!showPsychPanel)}
+                  style={{ padding: '14px 24px', display: 'inline-flex', alignItems: 'center', gap: 16, borderColor: showPsychPanel ? 'var(--cyan)' : 'rgba(0,245,255,0.3)', cursor: 'pointer', transition: 'all 0.3s ease', transform: showPsychPanel ? 'scale(1.03)' : 'scale(1)' }}>
+                  <span style={{ fontSize: '1.8rem' }}>🧠</span>
+                  <div>
+                    <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '1rem', color: 'var(--cyan)' }}>{user.psychProfile.psychProfile}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: 2 }}>Cognitive Archetype · <span style={{ color: 'rgba(0,245,255,0.6)' }}>{showPsychPanel ? 'tap to close' : 'tap for details'}</span></div>
+                  </div>
+                  <span style={{ fontSize: '0.9rem', color: 'var(--cyan)', transition: 'transform 0.3s ease', transform: showPsychPanel ? 'rotate(180deg)' : 'rotate(0deg)', marginLeft: 4 }}>▼</span>
+                </div>
+              </div>
+            )}
+
             <div className="glass" style={{ padding: '14px 24px', display: 'inline-flex', alignItems: 'center', gap: 12 }}>
               {user.badges.map((b, i) => (
                 <span key={i} style={{ fontSize: '0.78rem', color: 'var(--text-muted)', background: 'var(--surface-bright)', padding: '4px 10px', borderRadius: 999, border: '1px solid rgba(255,215,0,0.2)', color: 'var(--gold)' }}>🏅 {b}</span>
               ))}
             </div>
           </div>
+
+          {/* Expanded Cognitive Profile Panel */}
+          {showPsychPanel && user.psychProfile && (
+            <div className="glass card-glow" style={{
+              marginBottom: 32, padding: 0, overflow: 'hidden',
+              borderColor: 'rgba(0,245,255,0.25)',
+              animation: 'panelSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+              display: 'flex', flexDirection: 'row',
+            }}>
+              {/* Left: Profile Details */}
+              <div style={{ flex: 1, padding: '32px 36px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+                  <div style={{
+                    width: 56, height: 56, borderRadius: '50%',
+                    background: 'radial-gradient(circle at 40% 40%, #1a2340, #090e1c)',
+                    border: '2px solid var(--cyan)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: 'var(--glow-cyan-sm)', fontSize: '1.8rem', flexShrink: 0
+                  }}>🧠</div>
+                  <div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4 }}>Your Cognitive Archetype</div>
+                    <h3 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.5rem', color: 'var(--cyan)', margin: 0 }}>{user.psychProfile.psychProfile}</h3>
+                  </div>
+                </div>
+
+                <p style={{ color: 'var(--text-muted)', lineHeight: 1.75, fontSize: '0.95rem', marginBottom: 20 }}>
+                  {user.psychProfile.desc}
+                </p>
+
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  {user.psychProfile.traits?.map((trait, i) => (
+                    <span key={i} style={{
+                      background: 'rgba(123,47,255,0.15)', color: '#c9a0ff',
+                      padding: '7px 16px', borderRadius: 999, fontSize: '0.82rem', fontWeight: 600,
+                      border: '1px solid rgba(123,47,255,0.25)', letterSpacing: '0.02em'
+                    }}>
+                      {trait}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right: Re-examine CTA */}
+              <div style={{
+                width: 220, flexShrink: 0,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                padding: '32px 24px',
+                borderLeft: '1px solid rgba(0,245,255,0.1)',
+                background: 'rgba(0,245,255,0.03)',
+              }}>
+                <div style={{ fontSize: '2.4rem', marginBottom: 12 }}>🔄</div>
+                <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '0.85rem', color: '#fff', textAlign: 'center', marginBottom: 6 }}>
+                  Changed how you think?
+                </div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-dim)', textAlign: 'center', marginBottom: 18, lineHeight: 1.5 }}>
+                  Re-calibrate your cognitive profile if your approach has evolved.
+                </div>
+                <button className="btn btn-ghost" onClick={() => router.push('/onboarding?force=true')}
+                  style={{
+                    padding: '10px 22px', borderRadius: 999, fontSize: '0.85rem', fontWeight: 700,
+                    border: '1.5px solid rgba(0,245,255,0.4)', color: 'var(--cyan)',
+                    cursor: 'pointer', transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,245,255,0.12)'; e.currentTarget.style.borderColor = 'var(--cyan)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = ''; e.currentTarget.style.borderColor = 'rgba(0,245,255,0.4)'; }}
+                >
+                  Re-examine →
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Recent roadmaps */}
           <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '1.2rem', marginBottom: 20 }}>Continue Your Quests</h2>

@@ -48,6 +48,8 @@ With an immersive, neon-punk glassmorphic UI (The "Aetheris Protocol") and a flo
    npm run dev
    ```
 
+5. **Open the App**:
+   Navigate to [http://localhost:3000](http://localhost:3000) in your browser. Register an account, jump into the Roadmap, and click on a node to watch the AI engine generate your personalized module!
 
 ## 🧪 What's Next?
 *   Implement 3D visual data generation inside the video component.
