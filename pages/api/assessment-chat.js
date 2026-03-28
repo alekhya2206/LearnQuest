@@ -47,7 +47,7 @@ Your goal now is strictly to assess their current knowledge and proficiency leve
       const data = await response.json();
       return res.status(200).json({ reply: data.candidates?.[0]?.content?.parts?.[0]?.text });
     } else {
-      // GROQ FALLBACK
+      // GROQ PRIMARY (Optimized for Llama 3.3)
       const groqMessages = [{ role: 'system', content: systemPrompt }, ...messages.map(m => ({
         role: m.role === 'aria' ? 'assistant' : 'user',
         content: m.text || m.content || ""
@@ -57,7 +57,7 @@ Your goal now is strictly to assess their current knowledge and proficiency leve
         method: "POST",
         headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
+          model: "llama-3.3-70b-versatile",
           messages: groqMessages,
           temperature: 0.7
         })
