@@ -27,6 +27,18 @@ export default function Roadmap() {
 
   const getNodeById = (id) => ML_ROADMAP.find(n => n.id === id);
 
+  const drawSmoothPath = (from, to) => {
+    const sx = from.x + (from.isMajor ? 45 : 28);
+    const sy = from.y + (from.isMajor ? 45 : 28);
+    const ex = to.x + (to.isMajor ? 45 : 28);
+    const ey = to.y + (to.isMajor ? 45 : 28);
+    const dx = Math.abs(ex - sx);
+    const ctrlRatio = Math.max(0.3, Math.min(0.6, dx / 300));
+    const cx1 = ex > sx ? sx + dx * ctrlRatio : sx - dx * ctrlRatio;
+    const cx2 = ex > sx ? ex - dx * ctrlRatio : ex + dx * ctrlRatio;
+    return `M ${sx},${sy} C ${cx1},${sy} ${cx2},${ey} ${ex},${ey}`;
+  };
+
   const handleMouseDown = (e) => {
     if (e.target.closest('.roadmap-node-el')) return;
     setDragging(true);
@@ -151,22 +163,21 @@ export default function Roadmap() {
             {/* Background hex grid */}
             <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0,245,255,0.04) 1px, transparent 0)', backgroundSize: '50px 50px' }} />
 
-            {/* SVG connection lines */}
+            {/* SVG connection paths */}
             <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', pointerEvents: 'none' }}>
               {ML_CONNECTIONS.map(([fromId, toId], i) => {
                 const from = getNodeById(fromId);
                 const to = getNodeById(toId);
                 if (!from || !to) return null;
-                const fc = getNodeCenter(from);
-                const tc = getNodeCenter(to);
                 const isActive = from.status !== 'locked' && from.status !== 'hidden' && to.status !== 'locked' && to.status !== 'hidden';
                 const isHidden = from.status === 'hidden' || to.status === 'hidden';
                 return (
-                  <line key={i}
-                    x1={fc.x} y1={fc.y} x2={tc.x} y2={tc.y}
-                    stroke={isHidden ? 'rgba(255,215,0,0.25)' : isActive ? 'rgba(0,245,255,0.4)' : 'rgba(0,245,255,0.08)'}
-                    strokeWidth={isActive ? 2 : 1.5}
-                    strokeDasharray={isActive ? (from.status === 'done' ? 'none' : '6 4') : '4 8'}
+                  <path key={i}
+                    d={drawSmoothPath(from, to)}
+                    fill="none"
+                    stroke={isHidden ? 'rgba(255,215,0,0.15)' : isActive ? 'var(--cyan)' : 'rgba(0,245,255,0.08)'}
+                    strokeWidth={isActive ? 2.5 : 1.5}
+                    className={isActive ? 'energy-flow' : ''}
                   />
                 );
               })}
@@ -182,15 +193,19 @@ export default function Roadmap() {
                   onMouseEnter={() => setHoveredNode(node.id)}
                   onMouseLeave={() => setHoveredNode(null)}
                   onClick={() => handleNodeClick(node)}>
-                  <div className={`roadmap-node ${node.status === 'done' ? 'node-done' : node.status === 'active' ? 'node-active' : node.status === 'hidden' ? 'node-hidden' : 'node-locked'}`}
-                    style={{ cursor: node.status === 'locked' ? 'not-allowed' : 'pointer' }}>
-                    {node.status === 'done' ? '✓' : node.status === 'active' ? node.level : node.status === 'hidden' ? '?' : node.status === 'locked' ? '🔒' : node.level}
+                  <div className={`hud-node ${node.status === 'done' ? 'hud-node-done' : node.status === 'active' ? 'hud-node-active' : node.status === 'hidden' ? 'hud-node-hidden' : 'hud-node-locked'} ${node.isMajor ? 'hud-node-major' : ''} ${node.isMajor && node.status === 'active' ? 'hud-node-major-active' : ''}`}
+                    style={{ cursor: node.status === 'locked' ? 'not-allowed' : 'pointer', ...(node.isMajor && node.img ? { '--bg-img': `url("${node.img}")` } : {}) }}>
+                    <div className="hud-node-core">
+                      {node.status === 'done' ? '✓' : node.status === 'active' ? node.level : node.status === 'hidden' ? '?' : node.status === 'locked' ? '🔒' : node.level}
+                    </div>
                   </div>
 
                   {/* Level label */}
-                  <div style={{ position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap' }}>
-                    <div style={{ fontSize: '0.72rem', fontFamily: 'var(--font-head)', fontWeight: 600, color: node.status === 'done' ? 'var(--cyan)' : node.status === 'active' ? 'var(--cyan)' : node.status === 'hidden' ? 'var(--gold)' : 'var(--text-dim)', maxWidth: 120, whiteSpace: 'normal', textAlign: 'center' }}>
+                  <div style={{ position: 'absolute', top: node.isMajor ? 102 : 72, left: '50%', transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none', whiteSpace: 'nowrap' }}>
+                    <div className={`hud-label ${node.status === 'active' ? 'hud-label-active' : ''}`} style={{ color: node.status === 'done' ? 'var(--cyan)' : node.status === 'active' ? '#fff' : node.status === 'hidden' ? 'var(--gold)' : 'var(--text-dim)' }}>
+                      <span className="hud-bracket">[</span>
                       {node.status === 'hidden' ? '??? Hidden Quest' : node.title}
+                      <span className="hud-bracket">]</span>
                     </div>
                   </div>
 

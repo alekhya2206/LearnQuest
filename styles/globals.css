@@ -137,13 +137,39 @@ input, textarea, select { font-family: var(--font-body); }
 .input-field:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0,245,255,0.1); }
 .input-field::placeholder { color: var(--text-dim); }
 
-/* ─── PROGRESS NODE ROADMAP ─── */
-.roadmap-node { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: transform 0.2s; position: absolute; }
-.roadmap-node:hover { transform: scale(1.1); }
-.node-done { background: rgba(0,245,255,0.15); border: 2px solid var(--cyan); color: var(--cyan); box-shadow: var(--glow-cyan-sm); }
-.node-active { background: rgba(0,245,255,0.2); border: 2px solid var(--cyan); color: var(--cyan); animation: node-pulse 2s ease-in-out infinite; }
-.node-locked { background: var(--surface); border: 2px solid var(--outline); color: var(--text-dim); }
-.node-hidden { background: rgba(255,215,0,0.1); border: 2px solid var(--gold); color: var(--gold); animation: gold-shimmer 2s ease-in-out infinite; }
+/* ─── FUTURISTIC ROADMAP NODES ─── */
+.hud-node { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; position: absolute; transition: transform 0.3s; z-index: 5; box-shadow: 0 5px 0 rgba(0,245,255,0.15); }
+.hud-node:hover { transform: scale(1.1) translateY(-2px); }
+.hud-node-core { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 800; font-size: 0.95rem; z-index: 2; transition: all 0.3s; }
+
+.hud-node-done { background: rgba(0,245,255,0.05); border: 1px solid rgba(0,245,255,0.2); box-shadow: 0 5px 0 rgba(0,245,255,0.15), inset 0 0 10px rgba(0,245,255,0.1); }
+.hud-node-done .hud-node-core { background: rgba(0,245,255,0.15); color: var(--cyan); border: 2px solid var(--cyan); box-shadow: 0 0 12px rgba(0,245,255,0.3); }
+
+.hud-node-active { background: rgba(0,245,255,0.15); border: 1px solid rgba(0,245,255,0.5); box-shadow: 0 5px 0 rgba(0,245,255,0.3), inset 0 0 15px rgba(0,245,255,0.4); animation: node-pulse-hud 2.5s ease-in-out infinite; margin-top: -2px; }
+.hud-node-active .hud-node-core { background: var(--surface-highest); color: var(--cyan); border: 2px solid var(--cyan); box-shadow: 0 0 20px rgba(0,245,255,0.5); }
+
+.hud-node-locked { background: transparent; border: 1px dashed rgba(255,255,255,0.15); box-shadow: 0 4px 0 rgba(255,255,255,0.05); }
+.hud-node-locked .hud-node-core { background: rgba(255,255,255,0.03); color: var(--text-dim); border: 1px solid rgba(255,255,255,0.08); }
+
+.hud-node-hidden { background: rgba(255,215,0,0.05); border: 1px dashed rgba(255,215,0,0.2); box-shadow: 0 4px 0 rgba(255,215,0,0.1); animation: node-pulse-gold 3s ease-in-out infinite; }
+.hud-node-hidden .hud-node-core { background: rgba(255,215,0,0.1); color: var(--gold); border: 1px solid var(--gold); box-shadow: 0 0 15px rgba(255,215,0,0.2); }
+
+/* --- MAJOR NODES --- */
+.hud-node-major { width: 90px; height: 90px; border-radius: 50%; box-shadow: 0 6px 0 rgba(0,245,255,0.2), 0 0 30px rgba(0,245,255,0.1); position: relative; overflow: hidden; border: 2px solid rgba(0,245,255,0.3); }
+.hud-node-major::before { content: ""; position: absolute; inset: 0; background-image: var(--bg-img); background-size: cover; background-position: center; opacity: 0.35; filter: grayscale(30%) sepia(20%) hue-rotate(140deg); mix-blend-mode: screen; z-index: 1; transition: opacity 0.3s; }
+.hud-node-major:hover::before { opacity: 0.6; }
+.hud-node-major-active { border-color: rgba(0,245,255,0.8); box-shadow: 0 6px 0 rgba(0,245,255,0.4), 0 0 40px rgba(0,245,255,0.3); }
+.hud-node-major .hud-node-core { width: 70px; height: 70px; border-radius: 50%; font-size: 1.2rem; background: rgba(6,11,24,0.7); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); box-shadow: inset 0 0 15px rgba(0,0,0,0.5); border-width: 2px; }
+
+.energy-flow { stroke-dasharray: 12 10; animation: energy-flow 1.5s linear infinite; filter: drop-shadow(0 0 6px rgba(0,245,255,0.6)); }
+
+@keyframes energy-flow { from { stroke-dashoffset: 22; } to { stroke-dashoffset: 0; } }
+@keyframes node-pulse-hud { 0%,100% { box-shadow: 0 0 15px rgba(0,245,255,0.2), inset 0 0 10px rgba(0,245,255,0.3); } 50% { box-shadow: 0 0 30px rgba(0,245,255,0.4), inset 0 0 20px rgba(0,245,255,0.5); transform: scale(1.05); } }
+@keyframes node-pulse-gold { 0%,100% { box-shadow: 0 0 10px rgba(255,215,0,0.1); } 50% { box-shadow: 0 0 20px rgba(255,215,0,0.3); transform: scale(1.02); } }
+
+.hud-label { font-size: 0.72rem; font-family: var(--font-mono); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; max-width: 140px; white-space: normal; line-height: 1.4; }
+.hud-label-active { text-shadow: 0 0 8px rgba(0,245,255,0.8); }
+.hud-bracket { color: rgba(0,245,255,0.5); margin: 0 4px; font-weight: 400; }
 
 /* ─── TOOLTIP ─── */
 .tooltip { position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); background: var(--surface-highest); border: 1px solid rgba(0,245,255,0.2); border-radius: var(--radius-sm); padding: 10px 14px; width: 180px; font-size: 0.8rem; text-align: center; pointer-events: none; z-index: 50; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }

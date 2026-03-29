@@ -18,7 +18,7 @@ export const ML_ROADMAP = [
   { id:2, level:2, title:'Python for ML Basics', xp:150, time:'2 hrs', status:'done', x:340, y:160 },
   { id:3, level:3, title:'NumPy & Data Manipulation', xp:200, time:'2 hrs', status:'done', x:200, y:260 },
   { id:4, level:4, title:'Linear Algebra Foundations', xp:250, time:'3 hrs', status:'done', x:400, y:340 },
-  { id:5, level:5, title:'Supervised Learning', xp:300, time:'3 hrs', status:'active', x:600, y:240 },
+  { id:5, level:5, title:'Supervised Learning', xp:300, time:'3 hrs', status:'active', x:600, y:240, isMajor: true, img: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=200&h=200' },
   { id:6, level:6, title:'Regression Models', xp:300, time:'2.5 hrs', status:'unlocked', x:750, y:140 },
   { id:7, level:7, title:'Classification Algorithms', xp:350, time:'3 hrs', status:'unlocked', x:820, y:300 },
   { id:'H1', level:'?', title:'Hidden Quest: The Bias-Variance Oracle', xp:500, time:'???', status:'hidden', x:580, y:420 },
@@ -28,7 +28,7 @@ export const ML_ROADMAP = [
   { id:11, level:11, title:'Feature Engineering', xp:400, time:'3 hrs', status:'locked', x:1250, y:300 },
   { id:12, level:12, title:'Unsupervised Learning', xp:450, time:'4 hrs', status:'locked', x:1100, y:500 },
   { id:'H2', level:'?', title:'Hidden Quest: Cross-Domain Secrets', xp:700, time:'???', status:'hidden', x:900, y:520 },
-  { id:13, level:13, title:'Neural Networks Intro', xp:500, time:'4 hrs', status:'locked', x:1350, y:440 },
+  { id:13, level:13, title:'Neural Networks Intro', xp:500, time:'4 hrs', status:'locked', x:1350, y:440, isMajor: true, img: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=200&h=200' },
   { id:14, level:14, title:'Deep Learning Foundations', xp:550, time:'5 hrs', status:'locked', x:1400, y:220 },
   { id:15, level:15, title:'Gradient Descent & Backprop', xp:600, time:'4 hrs', status:'locked', x:1500, y:380 },
 ];
