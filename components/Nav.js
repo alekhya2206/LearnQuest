@@ -47,7 +47,7 @@ export default function Nav({ user: userProp }) {
             <a onClick={() => router.push('/dashboard')} style={{ cursor: 'pointer' }}>Home</a>
             <a onClick={() => router.push('/roadmap')} style={{ cursor: 'pointer' }}>My Roadmaps</a>
             <a onClick={() => router.push('/leaderboard')} style={{ cursor: 'pointer' }}>Leaderboard</a>
-            <a href="#" onClick={e => e.preventDefault()}>Explore</a>
+            <a onClick={() => router.push('/explore')} style={{ cursor: 'pointer' }}>Explore</a>
           </div>
           <div className="nav-right">
             <div style={{ textAlign: 'right', marginRight: 8 }}>
@@ -89,6 +89,7 @@ export default function Nav({ user: userProp }) {
             <a href="#features">Features</a>
             <a href="#how">How It Works</a>
             <a onClick={() => router.push('/leaderboard')} style={{ cursor: 'pointer' }}>Leaderboard</a>
+            <a onClick={() => router.push('/explore')} style={{ cursor: 'pointer' }}>Explore</a>
           </div>
           <div className="nav-right">
             <button className="btn btn-ghost-violet btn-sm" onClick={() => router.push('/auth')}>Sign In</button>
