@@ -46,7 +46,7 @@ export default function Nav({ user: userProp }) {
           <div className="nav-links">
             <a onClick={() => router.push('/dashboard')} style={{ cursor: 'pointer' }}>Home</a>
             <a onClick={() => router.push('/roadmap')} style={{ cursor: 'pointer' }}>My Roadmaps</a>
-            <a href="#" onClick={e => e.preventDefault()}>Leaderboard</a>
+            <a onClick={() => router.push('/leaderboard')} style={{ cursor: 'pointer' }}>Leaderboard</a>
             <a href="#" onClick={e => e.preventDefault()}>Explore</a>
           </div>
           <div className="nav-right">
@@ -88,7 +88,7 @@ export default function Nav({ user: userProp }) {
           <div className="nav-links">
             <a href="#features">Features</a>
             <a href="#how">How It Works</a>
-            <a href="#">Leaderboard</a>
+            <a onClick={() => router.push('/leaderboard')} style={{ cursor: 'pointer' }}>Leaderboard</a>
           </div>
           <div className="nav-right">
             <button className="btn btn-ghost-violet btn-sm" onClick={() => router.push('/auth')}>Sign In</button>
