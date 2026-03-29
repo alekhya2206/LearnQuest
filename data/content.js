@@ -12,33 +12,68 @@ export const DEMO_USER = {
 };
 
 
-// ML Roadmap Nodes
-export const ML_ROADMAP = [
-  { id:1, level:1, title:'What is Machine Learning?', xp:100, time:'45 min', status:'done', x:180, y:80 },
-  { id:2, level:2, title:'Python for ML Basics', xp:150, time:'2 hrs', status:'done', x:340, y:160 },
-  { id:3, level:3, title:'NumPy & Data Manipulation', xp:200, time:'2 hrs', status:'done', x:200, y:260 },
-  { id:4, level:4, title:'Linear Algebra Foundations', xp:250, time:'3 hrs', status:'done', x:400, y:340 },
-  { id:5, level:5, title:'Supervised Learning', xp:300, time:'3 hrs', status:'active', x:600, y:240, isMajor: true, img: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=200&h=200' },
-  { id:6, level:6, title:'Regression Models', xp:300, time:'2.5 hrs', status:'unlocked', x:750, y:140 },
-  { id:7, level:7, title:'Classification Algorithms', xp:350, time:'3 hrs', status:'unlocked', x:820, y:300 },
-  { id:'H1', level:'?', title:'Hidden Quest: The Bias-Variance Oracle', xp:500, time:'???', status:'hidden', x:580, y:420 },
-  { id:8, level:8, title:'Decision Trees & Random Forests', xp:400, time:'3 hrs', status:'locked', x:960, y:200 },
-  { id:9, level:9, title:'Support Vector Machines', xp:400, time:'3 hrs', status:'locked', x:1060, y:360 },
-  { id:10, level:10, title:'Model Evaluation & Metrics', xp:350, time:'2 hrs', status:'locked', x:1150, y:160 },
-  { id:11, level:11, title:'Feature Engineering', xp:400, time:'3 hrs', status:'locked', x:1250, y:300 },
-  { id:12, level:12, title:'Unsupervised Learning', xp:450, time:'4 hrs', status:'locked', x:1100, y:500 },
-  { id:'H2', level:'?', title:'Hidden Quest: Cross-Domain Secrets', xp:700, time:'???', status:'hidden', x:900, y:520 },
-  { id:13, level:13, title:'Neural Networks Intro', xp:500, time:'4 hrs', status:'locked', x:1350, y:440, isMajor: true, img: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=200&h=200' },
-  { id:14, level:14, title:'Deep Learning Foundations', xp:550, time:'5 hrs', status:'locked', x:1400, y:220 },
-  { id:15, level:15, title:'Gradient Descent & Backprop', xp:600, time:'4 hrs', status:'locked', x:1500, y:380 },
+// ML Roadmap Nodes - Beginner (1-10)
+export const ML_ROADMAP_BEGINNER = [
+  { id:1, level:1, title:'What is Machine Learning?', xp:100, time:'45 min', x:180, y:80 },
+  { id:2, level:2, title:'Python for ML Basics', xp:150, time:'2 hrs', x:340, y:160 },
+  { id:3, level:3, title:'NumPy & Data Manipulation', xp:200, time:'2 hrs', x:200, y:260 },
+  { id:4, level:4, title:'Linear Algebra Foundations', xp:250, time:'3 hrs', x:400, y:340 },
+  { id:5, level:5, title:'Supervised Learning', xp:300, time:'3 hrs', x:600, y:240, isMajor: true, img: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=200&h=200' },
+  { id:6, level:6, title:'Regression Models', xp:300, time:'2.5 hrs', x:750, y:140 },
+  { id:7, level:7, title:'Classification Algorithms', xp:350, time:'3 hrs', x:820, y:300 },
+  { id:'H1', level:'?', title:'Hidden Quest: The Bias-Variance Oracle', xp:500, time:'???', x:580, y:420 },
+  { id:8, level:8, title:'Decision Trees', xp:400, time:'3 hrs', x:960, y:200 },
+  { id:9, level:9, title:'Model Evaluation', xp:350, time:'2 hrs', x:1150, y:160 },
+  { id:10, level:10, title:'Unsupervised Learning', xp:450, time:'4 hrs', x:1100, y:360 },
 ];
 
-// Node connections [from_id, to_id]
-export const ML_CONNECTIONS = [
+export const ML_CONNECTIONS_BEGINNER = [
   [1,2],[2,3],[3,4],[4,5],[5,6],[5,7],[5,'H1'],
-  [6,8],[7,8],[8,9],[9,10],[10,11],[11,12],[12,'H2'],
-  [12,13],[13,14],[14,15]
+  [6,8],[7,8],[8,9],[9,10]
 ];
+
+// ML Roadmap Nodes - Intermediate (11-20)
+export const ML_ROADMAP_INTERMEDIATE = [
+  { id:11, level:11, title:'Feature Engineering', xp:400, time:'3 hrs', x:180, y:120 },
+  { id:12, level:12, title:'Advanced SVMs', xp:450, time:'4 hrs', x:360, y:240 },
+  { id:13, level:13, title:'Neural Networks Intro', xp:500, time:'4 hrs', x:600, y:200, isMajor: true, img: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=200&h=200' },
+  { id:14, level:14, title:'Deep Learning Foundations', xp:550, time:'5 hrs', x:780, y:100 },
+  { id:15, level:15, title:'Gradient Descent & Backprop', xp:600, time:'4 hrs', x:850, y:320 },
+  { id:'H2', level:'?', title:'Hidden Quest: The Optimization Enigma', xp:700, time:'???', x:700, y:450 },
+  { id:16, level:16, title:'Convolutional Neural Networks', xp:650, time:'5 hrs', x:1050, y:200 },
+  { id:17, level:17, title:'Recurrent Neural Networks', xp:650, time:'5 hrs', x:1200, y:100 },
+  { id:18, level:18, title:'NLP Basics', xp:550, time:'4 hrs', x:1350, y:300 },
+  { id:19, level:19, title:'Recommender Systems', xp:600, time:'4 hrs', x:1450, y:140 },
+  { id:20, level:20, title:'Time Series Forecasting', xp:650, time:'5 hrs', x:1550, y:400 }
+];
+
+export const ML_CONNECTIONS_INTERMEDIATE = [
+  [11,12],[12,13],[13,14],[13,15],[13,'H2'],
+  [14,16],[15,16],[16,17],[16,18],[17,19],[18,20],[19,20]
+];
+
+// ML Roadmap Nodes - Advanced (21-30)
+export const ML_ROADMAP_ADVANCED = [
+  { id:21, level:21, title:'Transformer Architectures', xp:800, time:'6 hrs', x:200, y:250, isMajor: true, img: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=200&h=200' },
+  { id:22, level:22, title:'Attention Mechanisms', xp:700, time:'5 hrs', x:400, y:150 },
+  { id:23, level:23, title:'Large Language Models (LLMs)', xp:850, time:'7 hrs', x:600, y:250 },
+  { id:24, level:24, title:'Reinforcement Learning', xp:900, time:'8 hrs', x:800, y:120 },
+  { id:25, level:25, title:'GANs & Generative AI', xp:850, time:'6 hrs', x:850, y:380 },
+  { id:26, level:26, title:'RLHF (Human Feedback)', xp:750, time:'5 hrs', x:1050, y:250 },
+  { id:27, level:27, title:'Model Deployment & MLOps', xp:700, time:'4 hrs', x:1200, y:100 },
+  { id:28, level:28, title:'Distributed Training', xp:800, time:'6 hrs', x:1350, y:350 },
+  { id:'H3', level:'?', title:'Hidden Quest: The AGI Protocol', xp:1000, time:'???', x:1250, y:500 },
+  { id:29, level:29, title:'AI Safety & Alignment', xp:750, time:'5 hrs', x:1500, y:150 },
+  { id:30, level:30, title:'State of the Art Frontiers', xp:1000, time:'10 hrs', x:1650, y:300 }
+];
+
+export const ML_CONNECTIONS_ADVANCED = [
+  [21,22],[21,23],[22,23],[23,24],[23,25],
+  [24,26],[25,26],[26,27],[26,28],[28,'H3'],
+  [27,29],[28,30],[29,30]
+];
+
+export const ML_ROADMAP = [...ML_ROADMAP_BEGINNER, ...ML_ROADMAP_INTERMEDIATE, ...ML_ROADMAP_ADVANCED];
 
 // Level content (main content area)
 export const getFallbackContent = (node) => ({

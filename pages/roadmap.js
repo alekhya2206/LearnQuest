@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import Nav from '../components/Nav';
-import { ML_ROADMAP, ML_CONNECTIONS } from '../data/content';
+import { ML_ROADMAP_BEGINNER, ML_ROADMAP_INTERMEDIATE, ML_ROADMAP_ADVANCED, ML_CONNECTIONS_BEGINNER, ML_CONNECTIONS_INTERMEDIATE, ML_CONNECTIONS_ADVANCED } from '../data/content';
 
 const Particles = dynamic(() => import('../components/Particles'), { ssr: false });
 
@@ -11,6 +11,7 @@ export default function Roadmap() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [activeLevel, setActiveLevel] = useState(1);
+  const [activeTier, setActiveTier] = useState('Beginner');
   const [hoveredNode, setHoveredNode] = useState(null);
   const [zoom, setZoom] = useState(0.72);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -23,7 +24,11 @@ export default function Roadmap() {
     if (!u) { router.push('/auth'); return; }
     const parsedUser = JSON.parse(u);
     setUser(parsedUser);
-    setActiveLevel(parsedUser.level || 1);
+    const lvl = parsedUser.level || 1;
+    setActiveLevel(lvl);
+    if (lvl <= 10) setActiveTier('Beginner');
+    else if (lvl <= 20) setActiveTier('Intermediate');
+    else setActiveTier('Advanced');
   }, [router]);
 
   const getNodeCenter = (node) => ({ x: node.x + 28, y: node.y + 28 });
@@ -61,10 +66,14 @@ export default function Roadmap() {
 
   if (!user) return null;
 
+  const activeRoadmapArray = activeTier === 'Beginner' ? ML_ROADMAP_BEGINNER : activeTier === 'Intermediate' ? ML_ROADMAP_INTERMEDIATE : ML_ROADMAP_ADVANCED;
+  const activeConnectionsArray = activeTier === 'Beginner' ? ML_CONNECTIONS_BEGINNER : activeTier === 'Intermediate' ? ML_CONNECTIONS_INTERMEDIATE : ML_CONNECTIONS_ADVANCED;
+
   const getNodeStatus = (n) => {
     if (n.level === '?') {
       if (n.id === 'H1') return activeLevel >= 7 ? ((activeLevel > 7) ? 'done' : 'active') : 'hidden';
-      if (n.id === 'H2') return activeLevel >= 13 ? ((activeLevel > 13) ? 'done' : 'active') : 'hidden';
+      if (n.id === 'H2') return activeLevel >= 15 ? ((activeLevel > 15) ? 'done' : 'active') : 'hidden';
+      if (n.id === 'H3') return activeLevel >= 28 ? ((activeLevel > 28) ? 'done' : 'active') : 'hidden';
       return 'hidden';
     }
     const lvl = Number(n.level);
@@ -73,11 +82,11 @@ export default function Roadmap() {
     return 'locked';
   };
 
-  const dynamicRoadmap = ML_ROADMAP.map(n => ({ ...n, status: getNodeStatus(n) }));
+  const dynamicRoadmap = activeRoadmapArray.map(n => ({ ...n, status: getNodeStatus(n) }));
   const getNodeById = (id) => dynamicRoadmap.find(n => n.id === id);
 
   const completedXP = dynamicRoadmap.filter(n => n.status === 'done').reduce((s, n) => s + (n.xp || 0), 0);
-  const totalLevels = ML_ROADMAP.filter(n => typeof n.level === 'number').length; 
+  const totalLevels = activeRoadmapArray.filter(n => typeof n.level === 'number').length; 
   const completedLevels = dynamicRoadmap.filter(n => typeof n.level === 'number' && n.status === 'done').length;
 
   return (
@@ -92,7 +101,7 @@ export default function Roadmap() {
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Domain</div>
             <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.3rem', marginBottom: 8 }}>Machine Learning</h2>
-            <span style={{ fontSize: '0.72rem', padding: '3px 10px', borderRadius: 999, background: 'rgba(0,245,255,0.1)', color: 'var(--cyan)', border: '1px solid rgba(0,245,255,0.2)', fontWeight: 600 }}>INTERMEDIATE</span>
+            <span style={{ fontSize: '0.72rem', padding: '3px 10px', borderRadius: 999, background: 'rgba(0,245,255,0.1)', color: 'var(--cyan)', border: '1px solid rgba(0,245,255,0.2)', fontWeight: 600, textTransform: 'uppercase' }}>{activeTier}</span>
           </div>
 
           {/* User stats */}
@@ -139,16 +148,19 @@ export default function Roadmap() {
           <div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Your Tier</div>
             {[
-              { label: 'Beginner', active: false },
-              { label: 'Intermediate', active: true },
-              { label: 'Advanced', active: false },
-            ].map((t, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 8, marginBottom: 4, background: t.active ? 'rgba(0,245,255,0.06)' : 'transparent', border: `1px solid ${t.active ? 'rgba(0,245,255,0.2)' : 'transparent'}` }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: t.active ? 'var(--cyan)' : 'var(--outline)', boxShadow: t.active ? 'var(--glow-cyan-sm)' : 'none' }} />
-                <span style={{ fontSize: '0.85rem', color: t.active ? 'var(--cyan)' : 'var(--text-dim)', fontWeight: t.active ? 600 : 400 }}>{t.label}</span>
-                {t.active && <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: 'var(--cyan)', background: 'rgba(0,245,255,0.1)', padding: '2px 6px', borderRadius: 999 }}>YOU</span>}
+              { label: 'Beginner' },
+              { label: 'Intermediate' },
+              { label: 'Advanced' },
+            ].map((t, i) => {
+              const isActive = t.label === activeTier;
+              const isUserTier = (t.label === 'Beginner' && activeLevel <= 10) || (t.label === 'Intermediate' && activeLevel > 10 && activeLevel <= 20) || (t.label === 'Advanced' && activeLevel > 20);
+              return (
+              <div key={i} onClick={() => setActiveTier(t.label)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 8, marginBottom: 4, background: isActive ? 'rgba(0,245,255,0.06)' : 'transparent', border: `1px solid ${isActive ? 'rgba(0,245,255,0.2)' : 'transparent'}`, transition: 'all 0.2s' }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: isActive ? 'var(--cyan)' : 'var(--outline)', boxShadow: isActive ? 'var(--glow-cyan-sm)' : 'none' }} />
+                <span style={{ fontSize: '0.85rem', color: isActive ? 'var(--cyan)' : 'var(--text-dim)', fontWeight: isActive ? 600 : 400 }}>{t.label}</span>
+                {isUserTier && <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: 'var(--cyan)', background: 'rgba(0,245,255,0.1)', padding: '2px 6px', borderRadius: 999 }}>YOU</span>}
               </div>
-            ))}
+            )})}
           </div>
 
           {/* Legend */}
@@ -185,7 +197,7 @@ export default function Roadmap() {
 
             {/* SVG connection paths */}
             <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', pointerEvents: 'none' }}>
-              {ML_CONNECTIONS.map(([fromId, toId], i) => {
+              {activeConnectionsArray.map(([fromId, toId], i) => {
                 const from = getNodeById(fromId);
                 const to = getNodeById(toId);
                 if (!from || !to) return null;
@@ -283,7 +295,11 @@ export default function Roadmap() {
 
           <div style={{ padding: '12px 14px', background: 'rgba(255,215,0,0.04)', border: '1px solid rgba(255,215,0,0.15)', borderRadius: 8 }}>
             <div style={{ fontSize: '0.8rem', color: 'var(--gold)', fontWeight: 600, marginBottom: 4 }}>🗝️ Hidden Quests</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', lineHeight: 1.5 }}>2 hidden nodes await. Reach Level 7 to unlock your first secret quest.</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', lineHeight: 1.5 }}>
+              {activeTier === 'Beginner' ? 'Reach Level 7 to unlock your first secret quest.' :
+               activeTier === 'Intermediate' ? 'Reach Level 15 to unveil the optimization enigma.' :
+               'Reach Level 28 to unlock the AGI protocol.'}
+            </div>
           </div>
         </aside>
       </div>
