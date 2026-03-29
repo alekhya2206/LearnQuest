@@ -2,12 +2,16 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const { messages } = req.body;
   
-  const geminiKey = process.env.GEMINI_API_KEY;
-  const groqKey = process.env.GROQ_API_KEY;
+  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+  const groqKey = process.env.GROQ_API_KEY?.trim();
 
-  if (!geminiKey && !groqKey) {
+  // Robust validation for production readiness
+  const hasGemini = geminiKey && geminiKey.length > 5;
+  const hasGroq = groqKey && groqKey.length > 5;
+
+  if (!hasGemini && !hasGroq) {
     return res.status(500).json({ 
-      error: "Missing API Key. Please add GEMINI_API_KEY or GROQ_API_KEY to your environment/dashboard and redeploy." 
+      error: "No AI Brain configured. Please verify GEMINI_API_KEY or GROQ_API_KEY in your .env.local file and RESTART your dev server." 
     });
   }
 
@@ -18,7 +22,7 @@ Keep responses under 2-3 short paragraphs unless a long explanation is requested
 Always maintain your 'Neural Link' aesthetic.`;
 
   try {
-    if (geminiKey) {
+    if (hasGemini) {
       const history = messages.map(m => ({
         role: m.role === 'aria' ? 'model' : 'user',
         parts: [{ text: m.text || m.content || "" }]
