@@ -301,3 +301,72 @@ input, textarea, select { font-family: var(--font-body); }
   }
   .lb-col-topic { display: none; }
 }
+
+/* ─── INTERACTIVE GLOW EFFECT ─── */
+:root {
+  --x: 50vw;
+  --y: 50vh;
+  --size: 400px;
+}
+
+[data-glow] {
+  --spotlight: radial-gradient(
+    var(--size) circle at var(--x) var(--y),
+    rgba(255, 255, 255, 0.08),
+    transparent 100%
+  );
+  --border-spotlight: radial-gradient(
+    var(--size) circle at var(--x) var(--y),
+    rgba(0, 245, 255, 1),
+    transparent 100%
+  );
+  position: relative;
+  background-image: var(--spotlight);
+  background-attachment: fixed;
+}
+
+[data-glow]::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background-image: var(--border-spotlight);
+  background-attachment: fixed;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+[data-glow]:hover::after {
+  opacity: 0.5;
+}
+
+.glow-card {
+  position: relative;
+  border-radius: var(--radius);
+  background: var(--surface-high);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.glow-card:hover { border-color: rgba(0, 245, 255, 0.3); }
+
+/* GSAP Horizontal Scroll Styles */
+.scaling-container {
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+  height: 80vh;
+  display: flex;
+  align-items: center;
+  background: var(--bg-deep);
+}
+
+.scaling-track {
+  display: flex;
+  gap: 80px;
+  padding: 0 50vw;
+  align-items: center;
+}
+

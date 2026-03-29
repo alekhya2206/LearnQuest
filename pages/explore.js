@@ -2,7 +2,7 @@ import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import Nav from '../components/Nav';
 import Particles from '../components/Particles';
-import ScrollSplitCards from '../components/ScrollSplitCards';
+import ScalingSlidingCards from '../components/ScalingSlidingCards';
 import { motion } from 'framer-motion';
 
 export default function Explore() {
@@ -16,17 +16,17 @@ export default function Explore() {
   }, []);
 
   return (
-    <div className="page" style={{ background: 'var(--bg-deep)' }}>
+    <div className="page" style={{ background: 'var(--bg-deep)', color: '#fff' }}>
       <Head>
         <title>Explore Dimensions | LearnQuest</title>
-        <meta name="description" content="Level up your knowledge with our personalized pricing dimensions. Choose the plan that fits your learning journey." />
+        <meta name="description" content="Level up your knowledge with our personalized pricing dimensions." />
       </Head>
 
       <Nav user={user} />
       <Particles />
 
-      {/* Hero Content before the Scroll Component */}
-      <section className="section" style={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+      {/* Hero Content */}
+      <section className="section" style={{ minHeight: '35vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', paddingBottom: 0 }}>
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -34,26 +34,21 @@ export default function Explore() {
             transition={{ duration: 0.8 }}
           >
             <span className="chip chip-active" style={{ marginBottom: '1.5rem' }}>// ACCESS PROTOCOL: EXPANSION</span>
-            <h1 style={{ fontSize: '4.5rem', fontWeight: 800, lineHeight: 1, letterSpacing: '-0.04em', marginBottom: '1.5rem' }}>
-              Infinite <span style={{ color: 'var(--violet)' }}>Learning.</span><br />
-              Tailored <span style={{ color: 'var(--cyan)' }}>Pathways.</span>
+            <h1 style={{ fontSize: '4rem', fontWeight: 800, lineHeight: 1, letterSpacing: '-0.04em', marginBottom: '1.5rem' }}>
+              Choose Your <span style={{ color: 'var(--cyan)' }}>Dimension.</span>
             </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem', maxWidth: '700px', margin: '0 auto 3rem' }}>
-               Unlock the full potential of your cognitive growth. Our dimensions are designed to adapt to your speed, your goals, and your future.
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
+               Unlock the full potential of your cognitive growth. Select a plan to begin your quest.
             </p>
-            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-              <button className="btn btn-primary btn-lg">Start Free Quest</button>
-              <button className="btn btn-ghost-violet btn-lg">View Curriculums</button>
-            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* The Scroll Split Cards Component */}
-      <ScrollSplitCards />
+      {/* The New Scaling Sliding Cards Component */}
+      <ScalingSlidingCards />
 
-      {/* Additional Features Section */}
-      <section className="section" style={{ background: 'rgba(0,0,0,0.3)', position: 'relative', zIndex: 10 }}>
+      {/* Additional Features Section - Tighter Spacing */}
+      <section className="section" style={{ background: 'rgba(0,0,0,0.5)', position: 'relative', zIndex: 10, borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '80px' }}>
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: '60px' }}>
             <h2 style={{ fontSize: '2.5rem', fontWeight: 700 }}>Beyond the Plans</h2>
