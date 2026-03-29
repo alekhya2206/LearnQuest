@@ -51,34 +51,59 @@ export default function ScrollSplitCards() {
     offset: ["start start", "end end"]
   });
 
+  // Smooth out the scroll progress for cinematic feel
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
+    stiffness: 80,
+    damping: 25,
     restDelta: 0.001
   });
 
   return (
-    <div ref={containerRef} style={{ height: '400vh', position: 'relative' }}>
+    <div ref={containerRef} style={{ height: '300vh', position: 'relative' }}>
       <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         
-        {/* Centered Heading that fades out */}
+        {/* Phase 1 Overlay Text */}
         <motion.div 
           style={{
             position: 'absolute',
             top: '15%',
             textAlign: 'center',
-            zIndex: 10,
+            zIndex: 20,
             opacity: useTransform(smoothProgress, [0, 0.15], [1, 0]),
-            y: useTransform(smoothProgress, [0, 0.15], [0, -20])
+            y: useTransform(smoothProgress, [0, 0.15], [0, -30])
           }}
         >
-          <h2 style={{ fontSize: '3.5rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '1rem' }}>
+          <span className="chip" style={{ marginBottom: '1rem', background: 'rgba(0,245,255,0.05)', borderColor: 'rgba(0,245,255,0.2)' }}>// ACCESS PROTOCOL: DIMENSIONS</span>
+          <h2 style={{ fontSize: '3.5rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '0.5rem' }}>
             Choose Your <span style={{ color: 'var(--cyan)' }}>Quest</span>
           </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>Scroll to reveal our personalized learning dimensions.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Scroll to fragment the core image and reveal pricing.</p>
         </motion.div>
 
-        <div style={{ display: 'flex', gap: 0, perspective: '2000px', width: '90vw', height: '60vh' }}>
+        {/* Phase 3 Header (reveals when flipping starts) */}
+        <motion.div 
+          style={{
+            position: 'absolute',
+            top: '12%',
+            textAlign: 'center',
+            zIndex: 10,
+            opacity: useTransform(smoothProgress, [0.5, 0.7], [0, 1]),
+            scale: useTransform(smoothProgress, [0.5, 0.7], [0.9, 1])
+          }}
+        >
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 800 }}>Pricing <span style={{ color: 'var(--violet)' }}>Tiers</span></h2>
+          <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>Comparative breakdown of learning access.</p>
+        </motion.div>
+
+        <div style={{ 
+          display: 'flex', 
+          perspective: '1500px', 
+          width: '90vw', 
+          height: '65vh', 
+          position: 'relative', 
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
           {plans.map((plan, i) => (
             <Card 
               key={plan.name} 
@@ -95,23 +120,27 @@ export default function ScrollSplitCards() {
 }
 
 function Card({ plan, index, total, progress }) {
-  // Split Logic (0 to 0.4)
-  // Each card moves from its center position to a spaced out position
-  const centerOffset = (index - (total - 1) / 2) * 5; // Initial slight overlap or spacing
-  const finalOffset = (index - (total - 1) / 2) * 22; // Final % offset
-  
-  const x = useTransform(progress, [0.1, 0.4], [`${centerOffset}vw`, `${finalOffset}vw`]);
-  
-  // Flip Logic (0.4 to 0.8)
-  const rotateY = useTransform(progress, [0.4, 0.8], [0, 180]);
-  
-  // Fade in content (0.6 to 0.9)
-  const contentOpacity = useTransform(progress, [0.7, 0.9], [0, 1]);
-  const imageOpacity = useTransform(progress, [0.7, 0.8], [1, 0]);
+  const cardWidthVw = 17.5; // 17.5vw per card
+  const gapVw = 1; // 1vw gap in final state
 
-  // Scale and Lift (0.8 to 1.0)
-  const scale = useTransform(progress, [0.8, 0.95], [1, 1.05]);
-  const y = useTransform(progress, [0.8, 0.95], [0, -10]);
+  // PHASE 1-2: SPLIT (0.1 to 0.45)
+  // At progress 0-0.1: Cards are locked adjacent.
+  // At progress 0.45: Cards are spaced out.
+  const initialX = (index - (total - 1) / 2) * cardWidthVw;
+  const finalX = (index - (total - 1) / 2) * (cardWidthVw + gapVw);
+  
+  const x = useTransform(progress, [0.1, 0.45], [`${initialX}vw`, `${finalX}vw`]);
+
+  // PHASE 3: FLIP (0.5 to 0.85)
+  const rotateY = useTransform(progress, [0.5, 0.85], [0, 180]);
+  
+  // Opacity Handover (during flip)
+  const imageOpacity = useTransform(progress, [0.65, 0.75], [1, 0]);
+  const contentOpacity = useTransform(progress, [0.65, 0.75], [0, 1]);
+
+  // Visual Polish (lift & scale)
+  const scale = useTransform(progress, [0.85, 0.95], [1, 1.05]);
+  const y = useTransform(progress, [0.85, 0.95], [0, -15]);
 
   const bgPosX = `${(index / (total - 1)) * 100}%`;
 
@@ -119,16 +148,14 @@ function Card({ plan, index, total, progress }) {
     <motion.div
       style={{
         position: 'absolute',
-        left: '50%',
-        x: '-50%',
         translateX: x,
         rotateY,
         scale,
         y,
-        width: '18%',
+        width: `${cardWidthVw}vw`,
         height: '100%',
         transformStyle: 'preserve-3d',
-        zIndex: index,
+        zIndex: index + 5,
         cursor: 'pointer'
       }}
     >
@@ -142,16 +169,17 @@ function Card({ plan, index, total, progress }) {
           backgroundImage: 'url(/images/hero-split.png)',
           backgroundSize: `${total * 100}% 100%`,
           backgroundPosition: `${bgPosX} 0`,
-          border: '1px solid rgba(0, 245, 255, 0.2)',
+          border: '1px solid rgba(0, 245, 255, 0.15)',
           opacity: imageOpacity,
           display: 'flex',
           alignItems: 'flex-end',
           padding: '24px',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          borderRadius: '12px'
         }}
       >
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(9,14,28,0.8), transparent)' }} />
-        <h3 style={{ position: 'relative', zIndex: 2, fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>{plan.name}</h3>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(9,14,28,0.7), transparent)' }} />
+        <h3 style={{ position: 'relative', zIndex: 2, fontSize: '1.2rem', fontWeight: 800, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{plan.name}</h3>
       </motion.div>
 
       {/* BACK FACE: CONTENT */}
@@ -162,30 +190,33 @@ function Card({ plan, index, total, progress }) {
           inset: 0,
           backfaceVisibility: 'hidden',
           transform: 'rotateY(180deg)',
-          background: 'rgba(19, 25, 43, 0.95)',
-          border: `1px solid ${plan.color}44`,
-          padding: '32px 24px',
+          background: 'rgba(13, 19, 35, 0.98)',
+          border: `1px solid ${plan.color}33`,
+          padding: '28px 20px',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: `0 0 40px ${plan.accent}`,
-          opacity: contentOpacity
+          boxShadow: `0 20px 50px rgba(0,0,0,0.5), 0 0 20px ${plan.accent}`,
+          opacity: contentOpacity,
+          borderRadius: '12px'
         }}
       >
-        <div style={{ marginBottom: '24px' }}>
-          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: plan.color, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{plan.name}</span>
-          <div style={{ display: 'flex', alignItems: 'baseline', marginTop: '8px' }}>
-            <span style={{ fontSize: '2.5rem', fontWeight: 800 }}>${plan.price}</span>
-            <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginLeft: '4px' }}>{plan.period}</span>
+        <div style={{ marginBottom: '20px' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: plan.color, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{plan.name}</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', marginTop: '6px' }}>
+            <span style={{ fontSize: '2.2rem', fontWeight: 800 }}>${plan.price}</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginLeft: '4px' }}>{plan.period}</span>
           </div>
         </div>
 
-        <div style={{ flex: 1 }}>
-          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px' }}>
+          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {plan.perks.map((perk, i) => (
-              <li key={i} style={{ display: 'flex', gap: '10px', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={plan.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
+              <li key={i} style={{ display: 'flex', gap: '8px', fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.3' }}>
+                <div style={{ marginTop: '2px' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={plan.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
                 {perk}
               </li>
             ))}
@@ -193,17 +224,18 @@ function Card({ plan, index, total, progress }) {
         </div>
 
         <button 
-          className="btn" 
+          className="btn btn-sm" 
           style={{ 
             width: '100%', 
             justifyContent: 'center',
-            marginTop: '24px',
+            marginTop: '20px',
             background: plan.color,
             color: '#060b18',
-            boxShadow: `0 0 15px ${plan.color}55`
+            fontWeight: 700,
+            boxShadow: `0 0 15px ${plan.color}44`
           }}
         >
-          Select Plan
+          Select Dimension
         </button>
       </motion.div>
     </motion.div>

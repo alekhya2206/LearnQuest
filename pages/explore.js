@@ -26,7 +26,7 @@ export default function Explore() {
       <Particles />
 
       {/* Hero Content before the Scroll Component */}
-      <section className="section" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+      <section className="section" style={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
