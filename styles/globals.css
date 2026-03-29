@@ -302,22 +302,28 @@ input, textarea, select { font-family: var(--font-body); }
   .lb-col-topic { display: none; }
 }
 
-/* ─── INTERACTIVE GLOW EFFECT ─── */
+/* ─── INTERACTIVE & MOVING GLOW EFFECT ─── */
+@font-face {
+  font-family: "Geist Sans";
+  src: url("https://assets.codepen.io/605876/GeistVF.ttf") format("truetype");
+}
+
 :root {
   --x: 50vw;
   --y: 50vh;
   --size: 400px;
+  --glow-hue: 210;
 }
 
 [data-glow] {
   --spotlight: radial-gradient(
     var(--size) circle at var(--x) var(--y),
-    rgba(255, 255, 255, 0.08),
+    hsla(var(--glow-hue), 100%, 70%, 0.1),
     transparent 100%
   );
   --border-spotlight: radial-gradient(
     var(--size) circle at var(--x) var(--y),
-    rgba(0, 245, 255, 1),
+    hsla(var(--glow-hue), 100%, 50%, 1),
     transparent 100%
   );
   position: relative;
@@ -328,26 +334,41 @@ input, textarea, select { font-family: var(--font-body); }
 [data-glow]::after {
   content: "";
   position: absolute;
-  inset: -2px;
+  inset: -1px;
   background-image: var(--border-spotlight);
   background-attachment: fixed;
   z-index: -1;
   border-radius: inherit;
-  opacity: 0;
+  opacity: 0.4;
   transition: opacity 0.5s;
 }
 
-[data-glow]:hover::after {
-  opacity: 0.5;
+/* Constant Moving Glow Animation */
+@keyframes glow-move {
+  0% { --x: 0%; --y: 0%; }
+  25% { --x: 100%; --y: 0%; }
+  50% { --x: 100%; --y: 100%; }
+  75% { --x: 0%; --y: 100%; }
+  100% { --x: 0%; --y: 0%; }
+}
+
+.moving-glow[data-glow] {
+  animation: glow-move 8s linear infinite;
+}
+
+.moving-glow[data-glow]::after {
+  opacity: 0.8;
 }
 
 .glow-card {
   position: relative;
-  border-radius: var(--radius);
-  background: var(--surface-high);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 32px;
+  background: rgba(10, 15, 30, 0.4); /* More transparent */
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   overflow: hidden;
   transition: transform 0.3s ease, border-color 0.3s ease;
+  will-change: transform, background-image;
 }
 
 .glow-card:hover { border-color: rgba(0, 245, 255, 0.3); }
@@ -360,13 +381,23 @@ input, textarea, select { font-family: var(--font-body); }
   height: 80vh;
   display: flex;
   align-items: center;
-  background: var(--bg-deep);
+  background: transparent;
 }
 
 .scaling-track {
   display: flex;
-  gap: 80px;
+  gap: 100px;
   padding: 0 50vw;
   align-items: center;
 }
+
+.floating-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  z-index: -1;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
 

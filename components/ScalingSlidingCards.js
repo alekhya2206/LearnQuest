@@ -19,7 +19,7 @@ const plans = [
   },
   { 
     name: 'Quest: Infinite', 
-    price: '19', 
+    price: '499', 
     period: '/mo', 
     phrase: 'Unlock consistent growth<br/>with unlimited modules',
     perks: ['Unlimited AI Courses', 'ARIA Pro Support', 'Custom Learning Path'],
@@ -29,7 +29,7 @@ const plans = [
   },
   { 
     name: 'Horizon: Quarterly', 
-    price: '49', 
+    price: '1,299', 
     period: '/qtr', 
     phrase: 'Extended focus for<br/>serious practitioners',
     perks: ['Everything in Infinite', 'Offline Course Access', 'Priority Roadmap Items'],
@@ -39,7 +39,7 @@ const plans = [
   },
   { 
     name: 'Nebula: Semestral', 
-    price: '89', 
+    price: '2,499', 
     period: '/sem', 
     phrase: 'Master your field<br/>with priority updates',
     perks: ['Early Feature Access', 'Professional Certifications', 'Priority Support'],
@@ -49,7 +49,7 @@ const plans = [
   },
   { 
     name: 'Cosmos: Yearly', 
-    price: '149', 
+    price: '3,999', 
     period: '/yr', 
     phrase: 'The ultimate legacy<br/>in cognitive expansion',
     perks: ['Full Lifetime Mind-Map', 'Personal AI Coach', 'VIP Presentation Access'],
@@ -59,13 +59,13 @@ const plans = [
   }
 ];
 
-
 export default function ScalingSlidingCards() {
   const containerRef = useRef(null);
   const trackRef = useRef(null);
 
   useEffect(() => {
     const cards = gsap.utils.toArray('.pricing-card');
+    const orbs = gsap.utils.toArray('.floating-orb');
     
     // Main Timeline
     const tl = gsap.timeline({
@@ -85,139 +85,163 @@ export default function ScalingSlidingCards() {
       ease: 'none'
     });
 
-    // Individual Scaling - Parallel to horizontal scroll
+    // Individual Scaling & Movement
     cards.forEach((card, i) => {
        gsap.to(card, {
         scale: 1,
         opacity: 1,
+        y: 0,
         duration: 0.5,
         scrollTrigger: {
           trigger: card,
           containerAnimation: tl,
-          start: 'left center+=200',
+          start: 'left center+=300',
           end: 'center center',
           scrub: true,
-          toggleActions: 'play reverse play reverse'
         }
       });
-      // Set initial state
-      gsap.set(card, { scale: 0.8, opacity: 0.4 });
+      gsap.set(card, { scale: 0.8, opacity: 0.2, y: 50 });
     });
 
-    // Pointer Update
-    const onMove = (e) => {
-      gsap.to(document.documentElement, {
-        '--x': e.clientX,
-        '--y': e.clientY,
-        duration: 0.5,
-        ease: 'power3.out'
+    // Animate Orbs independently for depth
+    orbs.forEach((orb) => {
+      gsap.to(orb, {
+        x: 'random(-100, 100)',
+        y: 'random(-100, 100)',
+        duration: 'random(3, 6)',
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
       });
+    });
+
+    // Optimized Pointer Update (using quickSetter for performance)
+    const setX = gsap.quickSetter(document.documentElement, '--x', 'px');
+    const setY = gsap.quickSetter(document.documentElement, '--y', 'px');
+
+    const onMove = (e) => {
+      setX(e.clientX);
+      setY(e.clientY);
     };
+
     window.addEventListener('pointermove', onMove);
     return () => window.removeEventListener('pointermove', onMove);
   }, []);
 
   return (
     <div ref={containerRef} className="scaling-container">
-      <div 
-        ref={trackRef} 
-        className="scaling-track"
-      >
+      {/* Background Orbs for "Flying Animation" effect */}
+      {[...Array(6)].map((_, i) => (
+        <div 
+          key={i} 
+          className="floating-orb" 
+          style={{ 
+            width: `${Math.random() * 200 + 100}px`,
+            height: `${Math.random() * 200 + 100}px`,
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            background: i % 2 === 0 ? 'var(--cyan)' : 'var(--violet)'
+          }} 
+        />
+      ))}
+
+      <div ref={trackRef} className="scaling-track">
         {plans.map((plan, i) => (
           <div 
             key={plan.name} 
-            className="pricing-card glow-card" 
+            className="pricing-card glow-card moving-glow" 
             data-glow
             style={{ 
-              minWidth: '380px', 
-              height: '540px', 
+              minWidth: '400px', 
+              height: '580px', 
               padding: '40px',
               display: 'flex',
               flexDirection: 'column',
               position: 'relative',
               overflow: 'hidden',
-              borderRadius: '32px',
-              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '40px',
+              border: '1px solid rgba(255,255,255,0.12)',
+              boxShadow: '0 20px 50px -10px rgba(0,0,0,0.5)',
+              '--glow-hue': plan.color === '#bc13fe' ? 280 : 180 // Map colors to hues for the glow engine
             }}
           >
-            {/* Premium Background Layer */}
+            {/* Background Texture with higher contrast overlay */}
             <div style={{
               position: 'absolute',
               inset: 0,
               backgroundImage: `url(${plan.bg})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
-              opacity: 0.15,
+              opacity: 0.1,
               zIndex: 0
             }} />
             
-            {/* Glass Content Shield */}
             <div style={{
               position: 'absolute',
               inset: 0,
-              background: 'radial-gradient(circle at top right, rgba(255,255,255,0.05), transparent)',
-              backdropFilter: 'blur(10px)',
+              background: 'linear-gradient(135deg, rgba(6,11,24,0.9), rgba(6,11,24,0.6))',
+              backdropFilter: 'blur(20px)',
               zIndex: 1
             }} />
 
             <div style={{ position: 'relative', zIndex: 2, flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ marginBottom: '20px' }}>
-                <div style={{ color: plan.color, fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>
+              <div style={{ marginBottom: '25px' }}>
+                <div style={{ color: plan.color, fontSize: '0.8rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '10px' }}>
                   {plan.name}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                  <span style={{ fontSize: '3.5rem', fontWeight: 800 }}>${plan.price}</span>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginLeft: '6px' }}>{plan.period}</span>
+                  <span style={{ fontSize: '1.5rem', fontWeight: 700, marginRight: '4px' }}>₹</span>
+                  <span style={{ fontSize: '4rem', fontWeight: 800, letterSpacing: '-2px' }}>{plan.price}</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '1.2rem', marginLeft: '8px', fontWeight: 500 }}>{plan.period}</span>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '32px' }}>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '35px' }}>
                 {[...Array(4)].map((_, j) => (
                   <svg
                     key={j}
                     xmlns="http://www.w3.org/2000/svg"
                     fill="currentColor"
                     viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="none"
-                    style={{ width: '22px', height: '22px', color: plan.color, opacity: 0.9 }}
+                    style={{ width: '24px', height: '24px', color: plan.color, filter: `drop-shadow(0 0 8px ${plan.color}55)` }}
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" d={plan.icon} />
+                    <path d={plan.icon} />
                   </svg>
                 ))}
               </div>
 
               <h2 
-                style={{ fontSize: '1.6rem', fontWeight: 700, lineHeight: 1.2, marginBottom: '28px', color: '#fff' }}
+                style={{ fontSize: '1.8rem', fontWeight: 700, lineHeight: 1.2, marginBottom: '30px', color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
                 dangerouslySetInnerHTML={{ __html: plan.phrase }} 
               />
 
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '14px', flex: 1 }}>
+              <div style={{ flex: 1 }}>
                 {plan.perks.map((perk, j) => (
-                  <li key={j} style={{ display: 'flex', gap: '12px', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', alignItems: 'center' }}>
-                    <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: `${plan.color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={plan.color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                  <div key={j} style={{ display: 'flex', gap: '14px', fontSize: '0.95rem', color: 'rgba(255,255,255,0.8)', alignItems: 'center', marginBottom: '16px' }}>
+                    <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: `${plan.color}22`, border: `1px solid ${plan.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={plan.color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
                     </div>
                     {perk}
-                  </li>
+                  </div>
                 ))}
-              </ul>
+              </div>
 
               <button 
                 className="btn btn-primary" 
                 style={{ 
-                  marginTop: 'auto', 
+                  marginTop: '40px', 
                   width: '100%', 
-                  height: '56px',
+                  height: '64px',
                   justifyContent: 'center',
                   background: plan.color,
                   color: '#060b18',
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                  borderRadius: '16px',
-                  boxShadow: `0 10px 20px -5px ${plan.color}66`
+                  fontWeight: 800,
+                  fontSize: '1.1rem',
+                  borderRadius: '20px',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  boxShadow: `0 15px 30px -10px ${plan.color}77`
                 }}
               >
                 Access Protocol
@@ -226,6 +250,13 @@ export default function ScalingSlidingCards() {
           </div>
         ))}
       </div>
+
+      <style jsx>{`
+        .pricing-card:hover button {
+          transform: translateY(-2px);
+          box-shadow: 0 20px 40px -10px var(--cyan);
+        }
+      `}</style>
     </div>
   );
 }
